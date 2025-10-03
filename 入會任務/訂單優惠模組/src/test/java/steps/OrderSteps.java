@@ -5,6 +5,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.And;
+import io.cucumber.java.Before;
 
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,12 @@ public class OrderSteps {
     
     private OrderService orderService;
     private Order result;
+    
+    @Before
+    public void beforeEachScenario() {
+        orderService = new OrderService();
+        result = null;
+    }
     
     @Given("no promotions are applied")
     public void no_promotions_are_applied() {
@@ -91,7 +98,7 @@ public class OrderSteps {
         double threshold = Double.parseDouble(config.get("threshold"));
         double discount = Double.parseDouble(config.get("discount"));
         
-        // 如果還沒有OrderService，創建一個新的
+        // 憒????rderService嚗撱箔????
         if (orderService == null) {
             orderService = new OrderService();
         }
@@ -100,10 +107,18 @@ public class OrderSteps {
     
     @Given("the buy one get one promotion for cosmetics is active")
     public void the_buy_one_get_one_promotion_for_cosmetics_is_active() {
-        // 如果還沒有OrderService，創建一個新的
+        // 憒????rderService嚗撱箔????
         if (orderService == null) {
             orderService = new OrderService();
         }
         orderService.configureBuyOneGetOneForCosmetics();
+    }
+    
+    @Given("the {int}\\/{int} quantity discount promotion is active")
+    public void the_quantity_discount_promotion_is_active(Integer numerator, Integer denominator) {
+        if (orderService == null) {
+            orderService = new OrderService();
+        }
+        orderService.configureElevenElevenQuantityDiscount();
     }
 }

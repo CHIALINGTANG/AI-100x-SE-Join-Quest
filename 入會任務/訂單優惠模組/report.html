@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>訂單優惠模組 BDD 與重構報告</title>
   <style>
-    body { font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; margin: 2rem; line-height: 1.6; }
+    body { font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; margin: 2rem; line-height: 1.6; }
     h1 { color: #2c3e50; }
     h2 { color: #34495e; margin-top: 2rem; }
     ul { padding-left: 1.5rem; }
@@ -20,17 +20,17 @@
 
   <section>
     <h2>BDD 開發流程回顧</h2>
-    <p>依 <code>BDD.prompt</code> 指南，以「先失敗、後實作、最後重構」方式完成六個情境：</p>
+    <p>依 <code>BDD.prompt</code> 與 <code>1111.feature</code> 的指引，逐一完成以下步驟：</p>
     <ul>
-      <li>建立並驗證 Cucumber walking skeleton。</li>
-      <li>每個 Scenario 先標記其餘為 <code>@Ignore</code>，撰寫 Steps、觀察預期的失敗，再補齊程式實作。</li>
-      <li>全部 Scenario 啟用後再次執行，確認整體邏輯符合驗收條件。</li>
+      <li>初始化 Cucumber walking skeleton，確認測試框架可以執行。</li>
+      <li>每次僅啟用一個 Scenario，先觀察失敗訊息後再補齊步驟與實作，維持「先紅後綠」的節奏。</li>
+      <li>所有 Scenario 全數解鎖後再執行一次測試，確保優惠邏輯的堆疊與順序正確。</li>
     </ul>
   </section>
 
   <section>
     <h2>程式對應清單</h2>
-    <p>各驗收情境與程式實作的對應如下：</p>
+    <p>主要驗收情境與程式位置對照如下：</p>
     <table>
       <thead>
         <tr>
@@ -40,64 +40,41 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>Single product without promotions</td>
-          <td><code>OrderService.checkout</code><br><code>PromotionContext</code></td>
-          <td>計算原始金額並建立 <code>PromotionContext</code>；無任何規則時維持原單。</td>
-        </tr>
-        <tr>
-          <td>Threshold discount applies when subtotal reaches 1000</td>
-          <td><code>ThresholdDiscountRule</code><br><code>OrderService.configureThresholdDiscount</code></td>
-          <td>註冊門檻折扣規則，於 <code>PromotionRule</code> 管線中檢查總額並累加折抵。</td>
-        </tr>
-        <tr>
-          <td>Buy-one-get-one for cosmetics（多品項／相同商品／混合分類）</td>
-          <td><code>BuyOneGetOneCosmeticsRule</code></td>
-          <td>遍歷 Context 內的贈送品清單，針對化妝品類別數量 &gt; 0 的項目額外贈送一件。</td>
-        </tr>
-        <tr>
-          <td>Multiple promotions stacked</td>
-          <td><code>OrderService.registerPromotion</code><br><code>PromotionRule</code> 依序套用</td>
-          <td>門檻折扣與買一送一皆已登錄，<code>checkout</code> 將按註冊順序執行兩種規則並合併結果。</td>
-        </tr>
+        <tr><td>order.feature + 1111.feature</td><td>OrderService.checkout, PromotionContext, BuyOneGetOneCosmeticsRule, ElevenElevenQuantityDiscountRule, ThresholdDiscountRule</td><td>整合計算原始金額、出貨明細與優惠堆疊；順序由 PromotionRule#getOrder 控制。</td></tr>
       </tbody>
     </table>
-    <p>重構後新增的 promotion 套件（<code>com.example.order.promotion</code>）提供擴充點，只需實作新的 <code>PromotionRule</code> 類別並透過 <code>registerPromotion</code> 掛載即可支援額外優惠。</p>
+    <p>新設計透過 <code>PromotionRule</code> 介面與 <code>PromotionContext</code> 封裝折扣行為；新增規則僅需實作並呼叫 <code>registerPromotion</code> 即可擴充。</p>
   </section>
 
   <section>
     <h2>重構設計重點</h2>
-    <p>依 <code>OCP-Refactor.prompt</code> 要求，針對 <code>OrderService</code> 套用開放封閉原則：</p>
     <ul>
-      <li>抽象化促銷規則：以 <code>PromotionRule</code> 介面與 <code>PromotionContext</code> 交換資料，將折扣/贈品邏輯模組化。</li>
-      <li>既有規則實作：<code>ThresholdDiscountRule</code>、<code>BuyOneGetOneCosmeticsRule</code> 封裝既有行為。</li>
-      <li>服務層精簡：<code>OrderService</code> 僅負責註冊與執行規則，未來新增策略不需修改核心服務。</li>
+      <li><code>OrderService</code> 僅負責註冊與排序促銷規則，遵守 OCP。</li>
+      <li><code>PromotionContext</code> 追蹤原始金額、當前小計與最終出貨列表，避免規則間互相覆寫資料。</li>
+      <li>各促銷（BOGO、11/11、門檻折扣）透過 <code>PromotionRule#getOrder</code> 定義執行順序，確保堆疊結果一致。</li>
     </ul>
   </section>
 
   <section>
     <h2>測試結果</h2>
-    <p>重構後執行回歸測試：</p>
     <table>
       <thead>
         <tr>
           <th>指令</th>
-          <th>說明</th>
-          <th>結果</th>
+          <th>輸出摘要</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>mvn test</code></td>
-          <td>執行所有 Cucumber Scenarios 與 JUnit 驗證</td>
-          <td>Tests run: 6, Failures: 0, Errors: 0, Skipped: 0</td>
+          <td><code>mvn -Dcucumber.plugin=html:target/cucumber-report.html test</code></td>
+          <td>Tests run: 14, Failures: 0, Errors: 0, Skipped: 0</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <footer>
-    <p>報告生成時間：' + (Get-Date).ToString('yyyy-MM-dd HH:mm:ss') + '</p>
+    <p>報告生成時間：2025-10-03 11:08:30</p>
   </footer>
 </body>
 </html>

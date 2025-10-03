@@ -35,7 +35,14 @@ public class PromotionContext {
         return discount;
     }
 
+    public double getCurrentSubtotal() {
+        return originalAmount - discount;
+    }
+
     public void addDiscount(double amount) {
+        if (amount <= 0) {
+            return;
+        }
         discount += amount;
     }
 
