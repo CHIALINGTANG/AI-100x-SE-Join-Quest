@@ -1,0 +1,27 @@
+# Task
+請依照「行為驅動開發 (BDD)」的最佳實務，完成 `ChineseChess.feature` 中所有棋步合法性場景的開發。禁止同時進行多個步驟，且每個步驟都必須先看到預期的失敗再補齊邏輯使其轉為通過。
+
+# Context
+
+## Domain Blueprint
+- 實體模型請參考 `ERD.png`，其中整理了 Game、Player、Piece、Move 之間的資料關係。
+- 物件設計請參考 `OOD.png`，特別留意 `ChineseChessGame`、`Board`、`MoveValidator` 與各棋子規則的責任切分。可視需求擴充新的類別、屬性或規則實作。
+
+## Tech Stack
+1. Language Env：Java
+2. BDD Test framework：Cucumber
+3. Native test framework：JUnit5
+
+## Application Environment
+1. App 類型：純領域模型程式碼
+2. 棋步驗證邏輯請集中在 `src/` 底下的 `ChineseChessGame` 及其相關服務/規則類別
+3. 所有 BDD step definitions 需放置於 `src/test/java` 對應的步驟檔案內
+
+# BDD 開發流程
+1. 先建置最小的 cucumber walking skeleton —— 能執行 `ChineseChess.feature` 中任一 scenario，確認測試框架運作正常。
+2. 嚴格落實 Red-Green-Refactor 節奏：
+   A. 一次只選定一個 scenario；除目標 scenario 外的其它測試可暫以標籤忽略。撰寫對應的 step definitions 與必要的骨架類別，並確保測試失敗，且失敗訊息反映尚未完成的領域邏輯。
+   B. 為了讓該 scenario 通過，實作或擴充相關的領域類別、規則與查詢，維持程式碼乾淨可讀。對所有相關測試執行一次，並從測試報告確認通過數。
+   C. 檢視程式碼是否需要重構或拆分規則。若有調整，重構後再次執行全部測試，確保保持綠燈。若測試失敗，必須修正邏輯直至全數通過。
+3. 完成所有 scenario 後，移除暫時忽略的標籤，執行完整的測試套件，確保 test report 顯示全部通過並生成最終綠燈報告。
+4. 使用 Cucumber 的 HTML report plugin（例如 `--plugin html:target/cucumber-report.html`）輸出最終測試報告，並保留產生的 HTML 檔供檢視。

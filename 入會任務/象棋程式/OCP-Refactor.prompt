@@ -1,0 +1,24 @@
+# Task
+延續 BDD 開發成果，針對中文象棋的棋步驗證核心進行 OCP 導向的重構。
+
+# Context
+重構範圍：`ChineseChessGame`、`MoveValidator`、`PieceRuleSet` 以及各棋子子類別與規則實作。
+重構目標：
+- Open for 新增棋子類型、特殊走法或規則組合。
+- Close for 既有的 `ChineseChessGame`、`MoveValidator` 主流程與已完成的棋子行為。
+
+請參考 `OOD.png` 所示的合成規則模型；規則應以可重複組合的 `MovementRule` 實作為單位。
+
+# 重構準則
+1. 先定位違反 OCP 的區域（例如：以 switch-case 判斷棋子類型、硬編碼的規則流程、重複的阻擋檢查邏輯）。
+2. 以最小增量調整：先為既有流程撰寫或補齊回歸測試，再逐步抽出介面與注入式組態。
+3. 重構過程中維持 `ChineseChess.feature` 中的 scenario 全數綠燈，必要時增加針對規則組合的單元或協作測試。
+4. 重構完成後系統需支援：
+   - 透過設定或組態將棋子繫結到對應的 `PieceRuleSet`。
+   - 在不修改 `MoveValidator` 主體的前提下，替換或新增 `MovementRule` 實作。
+   - 規則能同時組合行前檢查與行後檢查（例如士兵過河後可橫走）。
+5. 結束前檢查程式結構，移除重複邏輯或死程式碼，確保類別命名與封裝反映責任界線。
+
+# 提交前自我檢查
+- 執行 `./gradlew test` 或等效指令，確認 BDD 與單元測試全數通過。
+- 重新檢視 `OOD.png`，確保程式碼與圖示設計相符；若有差異請同步更新。
