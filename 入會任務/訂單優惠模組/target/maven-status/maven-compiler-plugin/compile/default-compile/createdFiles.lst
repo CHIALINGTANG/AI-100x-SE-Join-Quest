@@ -1,0 +1,8 @@
+com\example\order\promotion\PromotionRule.class
+com\example\order\Order.class
+com\example\order\Product.class
+com\example\order\promotion\ThresholdDiscountRule.class
+com\example\order\OrderService.class
+com\example\order\promotion\PromotionContext.class
+com\example\order\OrderItem.class
+com\example\order\promotion\BuyOneGetOneCosmeticsRule.class
